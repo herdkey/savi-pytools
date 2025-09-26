@@ -29,3 +29,34 @@ testpaths = ["tests/savipy_test/unit"]
 # formatting logs for pytest-html
 log_format = "[%(asctime)s] (%(process)d %(threadName)s) %(levelname)s $(filename)s:%(lineno)d | %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.13.2,<0.14.0)"
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["E501"]  # Allow longer lines in tests
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

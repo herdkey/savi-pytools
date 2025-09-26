@@ -14,3 +14,23 @@ global-install:
 [group('setup')]
 global-uninstall:
     pipx uninstall savi-pytools
+
+# Run linting checks
+[group('lint')]
+lint:
+    poetry run ruff check
+
+# Auto-fix linting issues
+[group('lint')]
+lint-fix:
+    poetry run ruff check --fix
+
+# Format code
+[group('lint')]
+format:
+    poetry run ruff format
+
+# Check formatting without making changes
+[group('lint')]
+format-check:
+    poetry run ruff format --check

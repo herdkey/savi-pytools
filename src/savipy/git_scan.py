@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import subprocess
-from typing import Optional, Tuple
+import sys
 
 # ANSI colors (no external deps)
 RESET = "\033[0m"
@@ -13,13 +12,11 @@ YELLOW = "\033[33m"
 MAGENTA = "\033[35m"
 RED = "\033[31m"
 
-def run_git(args, cwd) -> Tuple[str, bool]:
+
+def run_git(args, cwd) -> tuple[str, bool]:
     try:
         out = subprocess.check_output(
-            ["git"] + args,
-            cwd=cwd,
-            stderr=subprocess.DEVNULL,
-            text=True
+            ["git"] + args, cwd=cwd, stderr=subprocess.DEVNULL, text=True
         )
         return out.strip(), True
     except subprocess.CalledProcessError:
@@ -27,6 +24,7 @@ def run_git(args, cwd) -> Tuple[str, bool]:
     except FileNotFoundError:
         print("git not found on PATH", file=sys.stderr)
         sys.exit(1)
+
 
 def is_git_repo(path: str) -> bool:
     # Fast path: if .git exists (dir or file), treat as repo
@@ -37,7 +35,8 @@ def is_git_repo(path: str) -> bool:
     out, ok = run_git(["rev-parse", "--is-inside-work-tree"], path)
     return ok and out == "true"
 
-def current_branch(path: str) -> Tuple[str, bool, Optional[str]]:
+
+def current_branch(path: str) -> tuple[str, bool, str | None]:
     """
     Returns:
       (branch_display, is_main, extra_note)
@@ -55,7 +54,8 @@ def current_branch(path: str) -> Tuple[str, bool, Optional[str]]:
 
     return (name, name == "main", None)
 
-def diff_shortstat(path: str) -> Tuple[bool, str]:
+
+def diff_shortstat(path: str) -> tuple[bool, str]:
     """
     Returns:
       (has_diff, summary)
@@ -67,7 +67,10 @@ def diff_shortstat(path: str) -> Tuple[bool, str]:
         return False, ""
     return bool(summary), summary
 
-def print_summary(relpath: str, branch_disp: str, is_main: bool, has_diff: bool, diff_sum: str):
+
+def print_summary(
+    relpath: str, branch_disp: str, is_main: bool, has_diff: bool, diff_sum: str
+):
     header = f"{BOLD}{CYAN}{relpath}{RESET}"
     lines = [header]
 
@@ -81,9 +84,10 @@ def print_summary(relpath: str, branch_disp: str, is_main: bool, has_diff: bool,
     print("\n".join(lines))
     print()  # blank line between folders
 
+
 def walk_repos(root: str):
     root = os.path.abspath(root)
-    for dirpath, dirnames, filenames in os.walk(root):
+    for dirpath, dirnames, _filenames in os.walk(root):
         # Never descend into .git directories
         if ".git" in dirnames:
             dirnames.remove(".git")
@@ -105,12 +109,14 @@ def walk_repos(root: str):
 
         # Otherwise, keep walking normally
 
+
 def main():
     start_dir = sys.argv[1] if len(sys.argv) > 1 else "."
     if not os.path.isdir(start_dir):
         print(f"Not a directory: {start_dir}", file=sys.stderr)
         sys.exit(2)
     walk_repos(start_dir)
+
 
 if __name__ == "__main__":
     main()
