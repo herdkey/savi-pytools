@@ -34,3 +34,23 @@ format:
 [group('lint')]
 format-check:
     poetry run ruff format --check
+
+# Run mypy type checking
+[group('typecheck')]
+mypy:
+    poetry run mypy
+
+# Run pyright type checking
+[group('typecheck')]
+pyright:
+    poetry run pyright
+
+# Run both type checkers
+[group('typecheck')]
+typecheck:
+    poetry run mypy
+    poetry run pyright
+
+# Run all checks (lint + format + typecheck)
+[group('check')]
+check-all: lint format-check typecheck

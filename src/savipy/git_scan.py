@@ -13,7 +13,7 @@ MAGENTA = "\033[35m"
 RED = "\033[31m"
 
 
-def run_git(args, cwd) -> tuple[str, bool]:
+def run_git(args: list[str], cwd: str) -> tuple[str, bool]:
     try:
         out = subprocess.check_output(
             ["git"] + args, cwd=cwd, stderr=subprocess.DEVNULL, text=True
@@ -70,7 +70,7 @@ def diff_shortstat(path: str) -> tuple[bool, str]:
 
 def print_summary(
     relpath: str, branch_disp: str, is_main: bool, has_diff: bool, diff_sum: str
-):
+) -> None:
     header = f"{BOLD}{CYAN}{relpath}{RESET}"
     lines = [header]
 
@@ -85,7 +85,7 @@ def print_summary(
     print()  # blank line between folders
 
 
-def walk_repos(root: str):
+def walk_repos(root: str) -> None:
     root = os.path.abspath(root)
     for dirpath, dirnames, _filenames in os.walk(root):
         # Never descend into .git directories
@@ -110,7 +110,7 @@ def walk_repos(root: str):
         # Otherwise, keep walking normally
 
 
-def main():
+def main() -> None:
     start_dir = sys.argv[1] if len(sys.argv) > 1 else "."
     if not os.path.isdir(start_dir):
         print(f"Not a directory: {start_dir}", file=sys.stderr)
