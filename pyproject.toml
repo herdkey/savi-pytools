@@ -1,0 +1,31 @@
+[project]
+name = "savi-pytools"
+version = "1.0.0"
+requires-python = ">=3.13"
+
+[project.scripts]
+savipy_hello = 'savipy.hello_world:main'
+
+[tool.poetry]
+packages = [
+    { include = "savipy", from = "src" }
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.13,<4"
+
+[tool.pytest.ini_options]
+pythonpath = ["tests"]
+# This import-mode is recommended by pytest
+# https://docs.pytest.org/en/stable/explanation/goodpractices.html#tests-outside-application-code
+# The -s flag is to print output to stdout
+addopts = ["--import-mode=importlib", "-s"]
+# Default to running unit tests only
+testpaths = ["tests/savipy_test/unit"]
+# formatting logs for pytest-html
+log_format = "[%(asctime)s] (%(process)d %(threadName)s) %(levelname)s $(filename)s:%(lineno)d | %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"

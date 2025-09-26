@@ -1,0 +1,17 @@
+# VCS and tooling
+*.iml
+/.idea/
+/.vscode/
+/.junie/
+/.claude/
+.aider*
+.aider/
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+__pycache__
+
+# Dependencies
+/.justfiles/
+/.venv/
