@@ -32,7 +32,9 @@ log_date_format = "%Y-%m-%d %H:%M:%S"
 
 [dependency-groups]
 dev = [
-    "ruff (>=0.13.2,<0.14.0)"
+    "ruff (>=0.13.2,<0.14.0)",
+    "mypy (>=1.11.0,<2.0.0)",
+    "pyright (>=1.1.405,<2.0.0)",
 ]
 
 [tool.ruff]
@@ -60,3 +62,56 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.mypy]
+# Ultra-strict configuration
+python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_no_return = true
+strict_equality = true
+extra_checks = true
+
+# Paths
+mypy_path = "src"
+packages = ["savipy"]
+
+[tool.pyright]
+# Strict configuration
+include = ["src"]
+exclude = ["**/__pycache__"]
+typeCheckingMode = "strict"
+pythonVersion = "3.13"
+pythonPlatform = "All"
+
+# Strict type checking options
+reportMissingImports = "error"
+reportMissingTypeStubs = "error"
+reportMissingParameterType = "error"
+reportMissingTypeArguments = "error"
+reportMissingReturnType = "error"
+reportUnknownParameterType = "error"
+reportUnknownVariableType = "error"
+reportUnknownMemberType = "error"
+reportUnknownArgumentType = "error"
+reportUnknownLambdaType = "error"
+reportImplicitStringConcatenation = "error"
+reportUndefinedVariable = "error"
+reportAssertAlwaysTrue = "error"
+reportSelfClsParameterName = "error"
+reportImplicitOverride = "error"
+reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
+reportOverlappingOverload = "error"
