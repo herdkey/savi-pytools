@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+Find all git repos under this folder (ignore submodules) to check if they have any
+unfinished activity. If a repo has an active diff, or is not on the main branch,
+this will be reported.
+"""
+
 import os
 import subprocess
 import sys
