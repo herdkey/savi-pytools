@@ -16,31 +16,29 @@ global-uninstall:
     pipx uninstall savi-pytools
 
 # Run linting (auto-fix in dev mode, check-only in CI)
-[group('linters')]
+[group('check')]
 lint:
     poetry run ruff check {{ if dev_mode == "true" { "--fix" } else { "" } }}
 
 # Format code (auto-fix in dev mode, check-only in CI)
-[group('linters')]
-format:
+[group('check')]
+fmt:
     poetry run ruff format {{ if dev_mode == "true" { "" } else { "--check" } }}
 
 # Run mypy type checking
-[group('typecheck')]
+[group('check')]
 mypy:
     poetry run mypy
 
 # Run pyright type checking
-[group('typecheck')]
+[group('check')]
 pyright:
     poetry run pyright
 
 # Run both type checkers
-[group('typecheck')]
-typecheck:
-    poetry run mypy
-    poetry run pyright
+[group('check')]
+typecheck: mypy pyright
 
 # Run all checks (lint + format + typecheck)
 [group('check')]
-check-all: lint format typecheck
+check-all: lint fmt typecheck
