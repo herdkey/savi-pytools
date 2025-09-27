@@ -42,3 +42,10 @@ typecheck: mypy pyright
 # Run all checks (lint + format + typecheck)
 [group('check')]
 check-all: lint fmt typecheck
+
+[group('test')]
+unit-test:
+    pytest tests/savi_test/unit
+
+integration-test:
+    pytest tests/savi_test/integration
