@@ -15,25 +15,15 @@ global-install:
 global-uninstall:
     pipx uninstall savi-pytools
 
-# Run linting checks
-[group('lint')]
+# Run linting (auto-fix in dev mode, check-only in CI)
+[group('linters')]
 lint:
-    poetry run ruff check
+    poetry run ruff check {{ if dev_mode == "true" { "--fix" } else { "" } }}
 
-# Auto-fix linting issues
-[group('lint')]
-lint-fix:
-    poetry run ruff check --fix
-
-# Format code
-[group('lint')]
+# Format code (auto-fix in dev mode, check-only in CI)
+[group('linters')]
 format:
-    poetry run ruff format
-
-# Check formatting without making changes
-[group('lint')]
-format-check:
-    poetry run ruff format --check
+    poetry run ruff format {{ if dev_mode == "true" { "" } else { "--check" } }}
 
 # Run mypy type checking
 [group('typecheck')]
@@ -53,4 +43,4 @@ typecheck:
 
 # Run all checks (lint + format + typecheck)
 [group('check')]
-check-all: lint format-check typecheck
+check-all: lint format typecheck

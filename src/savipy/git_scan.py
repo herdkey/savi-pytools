@@ -46,13 +46,13 @@ def current_branch(path: str) -> tuple[str, bool, str | None]:
     """
     name, ok = run_git(["rev-parse", "--abbrev-ref", "HEAD"], path)
     if not ok:
-        return ("UNKNOWN", False, None)
+        return "UNKNOWN", False, None
 
     if name == "HEAD":
         sha, _ = run_git(["rev-parse", "--short", "HEAD"], path)
-        return (f"DETACHED@{sha or '?'}", False, None)
+        return f"DETACHED@{sha or '?'}", False, None
 
-    return (name, name == "main", None)
+    return name, name == "main", None
 
 
 def diff_shortstat(path: str) -> tuple[bool, str]:
