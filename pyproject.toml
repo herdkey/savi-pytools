@@ -6,6 +6,7 @@ requires-python = ">=3.13"
 [project.scripts]
 savipy_hello = 'savipy.hello_world:main'
 claude_hooks = 'savipy.claude_hooks.main:main'
+ascii_art = 'savipy.ascii_art:main'
 
 
 ################################################################################
