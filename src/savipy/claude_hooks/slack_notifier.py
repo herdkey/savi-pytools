@@ -9,15 +9,20 @@ from typing import Any
 class SlackNotifier:
     """Handles sending notifications to Slack via webhook."""
 
-    def __init__(self, webhook_url: str | None = None) -> None:
-        """Initialize with Slack webhook URL.
+    def __init__(self, webhook_url: str | None = None, member_id: str | None = None) -> None:
+        """Initialize with Slack webhook URL and member ID.
 
         Args:
             webhook_url: Slack webhook URL. If None, uses SLACK_WEBHOOK_URL env var.
+            member_id: Slack member ID. If None, uses SLACK_MEMBER_ID env var.
         """
         self.webhook_url = webhook_url or os.getenv('SLACK_WEBHOOK_URL')
         if not self.webhook_url:
             raise ValueError('SLACK_WEBHOOK_URL environment variable not set')
+
+        self.member_id = member_id or os.getenv('SLACK_MEMBER_ID')
+        if not self.member_id:
+            raise ValueError('SLACK_MEMBER_ID environment variable not set')
 
     def send_notification(self, title: str, fields: dict[str, str]) -> None:
         """Send a notification to Slack.
@@ -69,6 +74,7 @@ def send_notification_hook() -> None:
             {
                 '📁 Project': os.path.basename(os.getcwd()),
                 '💬 Status': 'Waiting for user input or permission',
+                '👤 Dev': f'<@{notifier.member_id}>',
             },
         )
     except Exception:
@@ -85,6 +91,7 @@ def send_stop_hook() -> None:
             {
                 '📁 Project': os.path.basename(os.getcwd()),
                 '🛑 Status': 'Operation stopped or subagent stopped',
+                '👤 Dev': f'<@{notifier.member_id}>',
             },
         )
     except Exception:
@@ -111,6 +118,7 @@ def send_long_operation_hook(
             {
                 '⏱️ Duration': f'{minutes}m {seconds}s',
                 '📁 Project': os.path.basename(os.getcwd()),
+                '👤 Dev': f'<@{notifier.member_id}>',
             },
         )
     except Exception:
