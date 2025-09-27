@@ -125,15 +125,14 @@ Examples:
         parser.print_help()
         sys.exit(1)
 
-    # Check if SLACK_WEBHOOK_URL is set
-    if not os.getenv('SLACK_WEBHOOK_URL'):
-        # Silently exit if no webhook URL is configured
-        sys.exit(0)
-
     try:
         if args.command == 'notification':
+            # Check if SLACK_WEBHOOK_URL is set for webhook commands
+            assert_webhook_configured()
             notification_command(args)
         elif args.command == 'stop':
+            # Check if SLACK_WEBHOOK_URL is set for webhook commands
+            assert_webhook_configured()
             stop_command(args)
         elif args.command == 'long-operation':
             if not args.duration and not args.start_file:
@@ -142,12 +141,19 @@ Examples:
                     file=sys.stderr,
                 )
                 sys.exit(1)
+            # Check if SLACK_WEBHOOK_URL is set for webhook commands
+            assert_webhook_configured()
             long_operation_command(args)
         elif args.command == 'create-start-file':
             create_start_file_command(args)
     except Exception:
         # Silently fail - we don't want hook failures to break Claude Code
         sys.exit(0)
+
+
+def assert_webhook_configured():
+    if not os.getenv('SLACK_WEBHOOK_URL'):
+        raise Exception('SLACK_WEBHOOK_URL environment variable not set')
 
 
 if __name__ == '__main__':

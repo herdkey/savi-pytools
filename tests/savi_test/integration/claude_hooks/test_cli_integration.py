@@ -1,126 +1,129 @@
 """Integration tests for Claude hooks CLI."""
 
-import subprocess
+import os
 import sys
 import tempfile
 import time
+from io import StringIO
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+from savipy.claude_hooks.main import (
+    main,
+)
 
-ROOT_DIR = Path(__file__).parents[5]
 
 class TestCLIIntegration:
     """Integration tests for the CLI."""
 
+    def _run_cli(
+        self, args: list[str], env: dict[str, str] | None = None
+    ) -> tuple[int, str, str]:
+        """Helper to run CLI with direct import and capture output."""
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        old_argv = sys.argv
+        old_env = dict(os.environ)
+
+        stdout_capture = StringIO()
+        stderr_capture = StringIO()
+        exit_code = 0
+
+        try:
+            # Set up environment
+            if env is not None:
+                os.environ.clear()
+                os.environ.update(env)
+
+            # Set up arguments
+            sys.argv = ['savipy.claude_hooks.main'] + args
+            sys.stdout = stdout_capture
+            sys.stderr = stderr_capture
+
+            # Run the main function
+            main()
+
+        except SystemExit as e:
+            exit_code = e.code or 0
+        finally:
+            # Restore original state
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+            sys.argv = old_argv
+            os.environ.clear()
+            os.environ.update(old_env)
+
+        return exit_code, stdout_capture.getvalue(), stderr_capture.getvalue()
+
     def test_cli_help(self) -> None:
         """Test CLI help output."""
-        result = subprocess.run(
-            [sys.executable, '-m', 'savipy.claude_hooks.main', '--help'],
-            capture_output=True,
-            text=True,
-            cwd=ROOT_DIR,
-        )
+        exit_code, stdout, stderr = self._run_cli(['--help'])
 
-        assert result.returncode == 0
-        assert 'Claude Code Slack notification hooks' in result.stdout
-        assert 'notification' in result.stdout
-        assert 'stop' in result.stdout
-        assert 'long-operation' in result.stdout
+        assert exit_code == 0
+        assert 'Claude Code Slack notification hooks' in stdout
+        assert 'notification' in stdout
+        assert 'stop' in stdout
+        assert 'long-operation' in stdout
 
     def test_cli_no_command(self) -> None:
         """Test CLI with no command."""
-        result = subprocess.run(
-            [sys.executable, '-m', 'savipy.claude_hooks.main'],
-            capture_output=True,
-            text=True,
-            cwd=ROOT_DIR,
-        )
+        exit_code, stdout, stderr = self._run_cli([])
 
-        assert result.returncode == 1
-        assert 'Claude Code Slack notification hooks' in result.stdout
+        assert exit_code == 1
+        assert 'Claude Code Slack notification hooks' in stdout
 
     def test_cli_notification_no_webhook(self) -> None:
         """Test CLI notification command without webhook URL."""
         env = {'PATH': '/usr/bin:/bin'}  # Clean environment without SLACK_WEBHOOK_URL
-        result = subprocess.run(
-            [sys.executable, '-m', 'savipy.claude_hooks.main', 'notification'],
-            capture_output=True,
-            text=True,
-            env=env,
-            cwd=ROOT_DIR,
-        )
+        exit_code, stdout, stderr = self._run_cli(['notification'], env=env)
 
         # Should exit with 0 when no webhook URL is configured
-        assert result.returncode == 0
+        assert exit_code == 0
 
     def test_cli_stop_no_webhook(self) -> None:
         """Test CLI stop command without webhook URL."""
         env = {'PATH': '/usr/bin:/bin'}  # Clean environment without SLACK_WEBHOOK_URL
-        result = subprocess.run(
-            [sys.executable, '-m', 'savipy.claude_hooks.main', 'stop'],
-            capture_output=True,
-            text=True,
-            env=env,
-            cwd=ROOT_DIR,
-        )
+        exit_code, stdout, stderr = self._run_cli(['stop'], env=env)
 
         # Should exit with 0 when no webhook URL is configured
-        assert result.returncode == 0
+        assert exit_code == 0
 
     def test_cli_long_operation_with_duration(self) -> None:
         """Test CLI long-operation command with duration."""
         env = {'PATH': '/usr/bin:/bin'}  # Clean environment without SLACK_WEBHOOK_URL
-        result = subprocess.run(
+        exit_code, stdout, stderr = self._run_cli(
             [
-                sys.executable,
-                '-m',
-                'savipy.claude_hooks.main',
                 'long-operation',
                 '--duration',
                 '30',
             ],
-            capture_output=True,
-            text=True,
             env=env,
-            cwd=ROOT_DIR,
         )
 
         # Should exit with 0 when no webhook URL is configured
-        assert result.returncode == 0
+        assert exit_code == 0
 
     def test_cli_long_operation_missing_args(self) -> None:
         """Test CLI long-operation command with missing arguments."""
-        result = subprocess.run(
-            [sys.executable, '-m', 'savipy.claude_hooks.main', 'long-operation'],
-            capture_output=True,
-            text=True,
-            cwd=ROOT_DIR,
-        )
+        exit_code, stdout, stderr = self._run_cli(['long-operation'])
 
-        assert result.returncode == 1
-        assert 'Either --duration or --start-file must be specified' in result.stderr
+        assert exit_code == 1
+        assert 'Either --duration or --start-file must be specified' in stderr
 
     def test_cli_create_start_file(self) -> None:
         """Test CLI create-start-file command."""
         with tempfile.TemporaryDirectory() as tmpdir:
             start_file = Path(tmpdir) / 'test_start.tmp'
 
-            result = subprocess.run(
+            exit_code, stdout, stderr = self._run_cli(
                 [
-                    sys.executable,
-                    '-m',
-                    'savipy.claude_hooks.main',
                     'create-start-file',
                     '--file',
                     str(start_file),
-                ],
-                capture_output=True,
-                text=True,
-                cwd=ROOT_DIR,
+                ]
             )
 
-            assert result.returncode == 0
+            assert exit_code == 0
             assert start_file.exists()
 
             # Verify the file contains a valid timestamp
@@ -141,24 +144,18 @@ class TestCLIIntegration:
                 'PATH': '/usr/bin:/bin',
                 'SLACK_WEBHOOK_URL': 'https://hooks.slack.com/test',
             }
-            result = subprocess.run(
+            exit_code, stdout, stderr = self._run_cli(
                 [
-                    sys.executable,
-                    '-m',
-                    'savipy.claude_hooks.main',
                     'long-operation',
                     '--start-file',
                     str(start_file),
                     '--threshold',
                     '3',
                 ],
-                capture_output=True,
-                text=True,
                 env=env,
-                cwd=ROOT_DIR,
             )
 
-            assert result.returncode == 0
+            assert exit_code == 0
             # Start file should be cleaned up
             assert not start_file.exists()
 
@@ -174,19 +171,52 @@ class TestCLIIntegration:
             'PATH': '/usr/bin:/bin',
         }
 
-        result = subprocess.run(
-            [sys.executable, '-m', 'savipy.claude_hooks.main', 'notification'],
-            capture_output=True,
-            text=True,
-            env=env,
-            cwd=ROOT_DIR,
-        )
+        exit_code, stdout, stderr = self._run_cli(['notification'], env=env)
 
-        assert result.returncode == 0
+        assert exit_code == 0
 
 
 class TestEndToEndWorkflow:
     """End-to-end workflow tests."""
+
+    def _run_cli(
+        self, args: list[str], env: dict[str, str] | None = None
+    ) -> tuple[int, str, str]:
+        """Helper to run CLI with direct import and capture output."""
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        old_argv = sys.argv
+        old_env = dict(os.environ)
+
+        stdout_capture = StringIO()
+        stderr_capture = StringIO()
+        exit_code = 0
+
+        try:
+            # Set up environment
+            if env is not None:
+                os.environ.clear()
+                os.environ.update(env)
+
+            # Set up arguments
+            sys.argv = ['savipy.claude_hooks.main'] + args
+            sys.stdout = stdout_capture
+            sys.stderr = stderr_capture
+
+            # Run the main function
+            main()
+
+        except SystemExit as e:
+            exit_code = e.code or 0
+        finally:
+            # Restore original state
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+            sys.argv = old_argv
+            os.environ.clear()
+            os.environ.update(old_env)
+
+        return exit_code, stdout_capture.getvalue(), stderr_capture.getvalue()
 
     def test_bash_operation_workflow(self) -> None:
         """Test the complete bash operation timing workflow."""
@@ -194,20 +224,14 @@ class TestEndToEndWorkflow:
             start_file = Path(tmpdir) / 'bash_start.tmp'
 
             # Step 1: Create start file
-            result1 = subprocess.run(
+            exit_code1, stdout1, stderr1 = self._run_cli(
                 [
-                    sys.executable,
-                    '-m',
-                    'savipy.claude_hooks.main',
                     'create-start-file',
                     '--file',
                     str(start_file),
-                ],
-                capture_output=True,
-                text=True,
-                cwd=ROOT_DIR,
+                ]
             )
-            assert result1.returncode == 0
+            assert exit_code1 == 0
             assert start_file.exists()
 
             # Step 2: Simulate some time passing
@@ -218,11 +242,8 @@ class TestEndToEndWorkflow:
                 'PATH': '/usr/bin:/bin',
                 'SLACK_WEBHOOK_URL': 'https://hooks.slack.com/test',
             }
-            result2 = subprocess.run(
+            exit_code2, stdout2, stderr2 = self._run_cli(
                 [
-                    sys.executable,
-                    '-m',
-                    'savipy.claude_hooks.main',
                     'long-operation',
                     '--start-file',
                     str(start_file),
@@ -231,13 +252,10 @@ class TestEndToEndWorkflow:
                     '--operation-type',
                     'Bash',
                 ],
-                capture_output=True,
-                text=True,
                 env=env,
-                cwd=ROOT_DIR,
             )
 
-            assert result2.returncode == 0
+            assert exit_code2 == 0
             # Start file should be cleaned up
             assert not start_file.exists()
 
@@ -252,11 +270,5 @@ class TestEndToEndWorkflow:
         ]
 
         for cmd in commands:
-            result = subprocess.run(
-                [sys.executable, '-m', 'savipy.claude_hooks.main'] + cmd,
-                capture_output=True,
-                text=True,
-                env=env,
-                cwd=ROOT_DIR,
-            )
-            assert result.returncode == 0
+            exit_code, stdout, stderr = self._run_cli(cmd, env=env)
+            assert exit_code == 0
