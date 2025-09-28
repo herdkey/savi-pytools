@@ -73,7 +73,7 @@ def send_notification_hook() -> None:
             '🔔 Claude Code Notification',
             {
                 '📁 Project': os.path.basename(os.getcwd()),
-                '💬 Status': 'Waiting for user input or permission',
+                # '💬 Status': 'Waiting for user input or permission',
                 '👤 Dev': f'<@{notifier.member_id}>',
             },
         )
