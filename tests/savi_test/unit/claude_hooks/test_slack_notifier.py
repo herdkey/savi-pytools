@@ -108,7 +108,7 @@ class TestHookFunctions:
         mock_notifier.send_notification.assert_called_once()
         args = mock_notifier.send_notification.call_args[0]
         assert args[0] == '🔔 Claude Code Notification'
-        assert '💬 Status' in args[1]
+        assert '👤 Dev' in args[1]
 
     @patch('savipy.claude_hooks.slack_notifier.SlackNotifier')
     def test_send_notification_hook_failure(self, mock_notifier_class: Mock) -> None:
