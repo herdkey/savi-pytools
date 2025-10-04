@@ -25,6 +25,14 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.13,<4"
 
+[dependency-groups]
+dev = [
+    "ruff (>=0.13.2,<0.14.0)",
+    "mypy (>=1.11.0,<2.0.0)",
+    "pyright (>=1.1.405,<2.0.0)",
+    "pytest (>=8.4.2,<9.0.0)",
+]
+
 
 ################################################################################
 #                                    pytest                                    #
@@ -41,14 +49,6 @@ testpaths = ["tests/savi_test/unit"]
 # formatting logs for pytest-html
 log_format = "[%(asctime)s] (%(process)d %(threadName)s) %(levelname)s $(filename)s:%(lineno)d | %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
-
-[dependency-groups]
-dev = [
-    "ruff (>=0.13.2,<0.14.0)",
-    "mypy (>=1.11.0,<2.0.0)",
-    "pyright (>=1.1.405,<2.0.0)",
-    "pytest (>=8.4.2,<9.0.0)",
-]
 
 
 ################################################################################
